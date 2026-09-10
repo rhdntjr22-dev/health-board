@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>검진기관 소통·협업 공간</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:"Pretendard","Noto Sans KR",Arial,sans-serif}
+    body{min-height:100vh;background:#f4f7f9;color:#263746}
+    button,input,textarea,select{font:inherit}
+    button{cursor:pointer}
+
+    .topbar{height:72px;background:#fff;border-bottom:1px solid #d9e3e8;display:flex;align-items:center;justify-content:center;padding:0 24px;position:sticky;top:0;z-index:50}
+    .topbar-inner{width:100%;max-width:1180px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:800;color:#176b87}
+    .brand-mark{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#176f98,#199a86);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}
+    .branch-label{font-size:13px;color:#70808b;font-weight:700}
+
+    .login-wrap{min-height:calc(100vh - 72px);display:flex;align-items:center;justify-content:center;padding:40px 18px;background:linear-gradient(145deg,#f4f8fb,#edf5f5)}
+    .login-card{width:100%;max-width:760px;background:#fff;border:1px solid #dce7ec;border-radius:24px;padding:54px;box-shadow:0 18px 50px rgba(38,72,91,.09);text-align:center}
+    .badge{display:inline-block;padding:8px 13px;border-radius:999px;background:#eaf7f5;color:#167b70;font-size:13px;font-weight:800;margin-bottom:20px}
+    h1{font-size:36px;color:#183e53;letter-spacing:-1.2px;margin-bottom:16px}
+    .subtitle{font-size:16px;color:#60717d;line-height:1.8;word-break:keep-all;margin-bottom:30px}
+    .purpose-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:30px}
+    .purpose{padding:17px;border:1px solid #e2eaee;border-radius:15px;background:#f8fafb;text-align:left}
+    .purpose b{display:block;font-size:14px;color:#284a5c;margin-bottom:5px}
+    .purpose span{font-size:12px;color:#7d8a93;line-height:1.5}
+    .nick-box{max-width:470px;margin:auto;text-align:left}
+    .nick-box label{display:block;margin-bottom:8px;font-size:14px;font-weight:800;color:#405765}
+    .input{width:100%;height:52px;border:1px solid #ccd9df;border-radius:11px;padding:0 14px;background:#fbfdfe;outline:none}
+    .input:focus,.text-input:focus,.textarea:focus,.select:focus{border-color:#208ca5;box-shadow:0 0 0 4px rgba(32,140,165,.09)}
+    .primary{border:0;background:linear-gradient(135deg,#176f98,#199a86);color:#fff;font-weight:800;border-radius:11px}
+    .enter-btn{width:100%;height:54px;margin-top:13px;font-size:16px}
+    .guide{font-size:12px;line-height:1.65;color:#87949d;text-align:center;margin-top:13px}
+    .login-footer{border-top:1px solid #e7edf0;margin-top:28px;padding-top:21px;color:#94a0a8;font-size:12px}
+
+    .board-screen{display:none;max-width:1180px;margin:auto;padding:30px 18px 60px}
+    .board-hero{background:linear-gradient(135deg,#176f98,#1b8f85);border-radius:20px;color:#fff;padding:28px 30px;display:flex;justify-content:space-between;align-items:center;gap:20px;box-shadow:0 12px 30px rgba(27,87,111,.12);margin-bottom:20px}
+    .board-hero h2{font-size:27px;margin-bottom:7px;letter-spacing:-.8px}
+    .board-hero p{font-size:13px;opacity:.88;line-height:1.65}
+    .user-panel{text-align:right;font-size:13px;white-space:nowrap}
+    .user-panel strong{font-size:16px}
+    .ghost-btn{margin-top:8px;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.12);color:#fff;padding:8px 11px;border-radius:9px;font-weight:700}
+
+    .notice-strip{background:#fff9e8;border:1px solid #f0dfad;border-radius:13px;padding:14px 17px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;color:#6b5b2f;font-size:13px;line-height:1.6}
+    .notice-strip b{white-space:nowrap;color:#8a6815}
+
+    .board-card{background:#fff;border:1px solid #dbe5ea;border-radius:18px;overflow:hidden;box-shadow:0 8px 25px rgba(49,77,92,.05)}
+    .toolbar{padding:18px;display:flex;gap:10px;justify-content:space-between;align-items:center;border-bottom:1px solid #e4ecef;background:#fbfcfd;flex-wrap:wrap}
+    .toolbar-left,.toolbar-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .select,.search-input{height:42px;border:1px solid #ccd9df;border-radius:10px;background:#fff;outline:none}
+    .select{padding:0 34px 0 11px}
+    .search-input{padding:0 12px;width:250px}
+    .small-btn{height:42px;padding:0 14px;border-radius:10px;border:1px solid #ccd9df;background:#fff;color:#526774;font-weight:800}
+    .write-btn{height:42px;padding:0 17px}
+    .count{font-size:13px;color:#657782;font-weight:700}
+
+    .board-table{width:100%}
+    .thead,.trow{display:grid;grid-template-columns:70px 105px minmax(0,1fr) 130px 125px 78px;align-items:center}
+    .thead{min-height:46px;background:#f4f7f9;border-bottom:1px solid #dfe8ec;color:#637681;font-size:12px;font-weight:800;text-align:center}
+    .trow{min-height:62px;border-bottom:1px solid #edf2f4;color:#536773;font-size:13px}
+    .trow:hover{background:#f9fbfc}
+    .trow>div{padding:11px;text-align:center;min-width:0}
+    .title-cell{text-align:left!important}
+    .title-btn{border:0;background:transparent;width:100%;text-align:left;color:#263f4f;font-size:14px;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .title-btn:hover{text-decoration:underline;color:#177e88}
+    .cat{display:inline-block;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;background:#edf5f7;color:#3d7180}
+    .cat.notice{background:#e9f0fb;color:#4266a0}
+    .cat.question{background:#fff2e7;color:#9b6328}
+    .cat.share{background:#e9f7ef;color:#35795a}
+    .cat.suggest{background:#f3ecfb;color:#75549a}
+    .comment-badge{font-size:11px;color:#168273;margin-left:5px;font-weight:800}
+    .empty{padding:72px 20px;text-align:center;color:#7f8d96}
+    .empty b{display:block;color:#4b6270;margin-bottom:7px}
+
+    .pagination{display:flex;justify-content:center;gap:6px;padding:18px;border-top:1px solid #edf2f4}
+    .page-btn{min-width:34px;height:34px;border:1px solid #d3dee3;background:#fff;border-radius:8px;color:#60737f;font-size:12px;font-weight:700}
+    .page-btn.active{background:#176f98;color:#fff;border-color:#176f98}
+
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(24,45,58,.48);z-index:100;padding:16px;align-items:center;justify-content:center}
+    .modal-bg.show{display:flex}
+    .modal{width:100%;max-width:720px;max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:18px;box-shadow:0 24px 70px rgba(25,55,70,.22)}
+    .modal-head{padding:20px 22px;border-bottom:1px solid #e4ecef;display:flex;justify-content:space-between;align-items:center}
+    .modal-head h3{font-size:20px;color:#28495b}
+    .close{width:34px;height:34px;border:0;border-radius:9px;background:#eef3f5;color:#657782;font-size:21px}
+    .modal-body{padding:22px}
+    .form-group{margin-bottom:18px}
+    .form-group label{display:block;font-size:13px;font-weight:800;color:#445b68;margin-bottom:8px}
+    .text-input,.textarea,.select.full{width:100%;border:1px solid #ccd9df;border-radius:10px;background:#fbfdfe;outline:none}
+    .text-input{height:48px;padding:0 13px}
+    .textarea{min-height:220px;padding:13px;resize:vertical;line-height:1.7}
+    .writer{height:46px;display:flex;align-items:center;padding:0 13px;border:1px solid #dce5e9;background:#f5f8f9;border-radius:10px;color:#5e707b;font-weight:700}
+    .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+    .btn{padding:10px 16px;border-radius:9px;font-weight:800;font-size:13px}
+    .btn.gray{border:1px solid #ccd8de;background:#fff;color:#5b707c}
+    .btn.red{border:1px solid #e4caca;background:#fffafa;color:#a64e4e;margin-right:auto}
+    .btn.green{border:0;background:linear-gradient(135deg,#176f98,#199a86);color:#fff}
+
+    .detail-title{font-size:23px;color:#203f52;line-height:1.45;margin-bottom:11px;word-break:break-word}
+    .detail-meta{display:flex;gap:10px 18px;flex-wrap:wrap;font-size:12px;color:#75858f;border-bottom:1px solid #e5ecef;padding-bottom:15px}
+    .detail-content{min-height:180px;padding:22px 2px;white-space:pre-wrap;word-break:break-word;line-height:1.85;color:#425966;font-size:14px}
+    .comment-section{border-top:1px solid #e5ecef;padding-top:20px;margin-top:4px}
+    .comment-section h4{font-size:15px;color:#385465;margin-bottom:12px}
+    .comment-item{padding:13px 0;border-bottom:1px solid #edf2f4}
+    .comment-meta{font-size:12px;color:#85929a;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+    .comment-text{font-size:13px;color:#4c626e;line-height:1.65;white-space:pre-wrap}
+    .comment-write{display:flex;gap:8px;margin-top:14px}
+    .comment-write textarea{flex:1;min-height:74px;border:1px solid #ccd9df;border-radius:10px;padding:10px;resize:vertical;outline:none}
+    .comment-write button{width:86px;border:0;border-radius:10px;background:#176f98;color:#fff;font-weight:800}
+    .comment-delete{border:0;background:none;color:#a86262;font-size:11px;font-weight:700}
+
+    .info-note{margin-top:15px;background:#eef6f8;border:1px solid #dcebed;border-radius:11px;padding:12px 14px;color:#69808b;font-size:11px;line-height:1.65}
+
+    @media(max-width:760px){
+      .topbar{height:64px;padding:0 14px}
+      .brand{font-size:15px}.brand-mark{width:31px;height:31px}.branch-label{display:none}
+      .login-wrap{min-height:calc(100vh - 64px);padding:22px 12px}
+      .login-card{padding:34px 18px;border-radius:18px}
+      h1{font-size:28px}.subtitle{font-size:14px}
+      .purpose-grid{grid-template-columns:1fr}.purpose{padding:14px}
+      .board-screen{padding:18px 10px 40px}
+      .board-hero{padding:22px 18px;display:block}.board-hero h2{font-size:23px}.user-panel{text-align:left;margin-top:16px}
+      .toolbar{padding:12px}.toolbar-left,.toolbar-right{width:100%}.search-input{flex:1;min-width:0}
+      .thead{display:none}
+      .trow{display:block;padding:14px}.trow>div{padding:0;text-align:left}
+      .num{display:none}.cat-cell{margin-bottom:8px}.title-cell{margin-bottom:9px}
+      .title-btn{white-space:normal;line-height:1.45}
+      .author,.date,.views{display:inline-block;margin-right:12px;font-size:11px;color:#81909a}
+      .modal-bg{padding:8px}.modal{max-height:calc(100vh - 16px);border-radius:14px}
+      .modal-head,.modal-body{padding:17px}
+      .comment-write{display:block}.comment-write button{width:100%;height:42px;margin-top:7px}
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><div class="brand-mark">H</div><span>국민건강보험공단 광주서부지사</span></div>
+    <div class="branch-label">검진기관 소통·협업 공간</div>
+  </div>
+</header>
+
+<main id="loginScreen" class="login-wrap">
+  <section class="login-card">
+    <div class="badge">검진기관 업무 소통 공간</div>
+    <h1>검진기관 소통·협업 공간</h1>
+    <p class="subtitle">
+      국민건강보험공단 광주서부지사와 검진기관 관계자 간 원활한 소통과 업무 협업을 위해 마련된 공간입니다.<br>
+      검진 업무와 관련된 다양한 의견과 정보를 함께 나누고, 보다 편리한 업무 환경을 만들어갑니다.
+    </p>
+    <div class="purpose-grid">
+      <div class="purpose"><b>업무 소통</b><span>검진 관련 질문과 의견을 편리하게 공유합니다.</span></div>
+      <div class="purpose"><b>정보 공유</b><span>기관 간 필요한 업무 정보를 함께 나눕니다.</span></div>
+      <div class="purpose"><b>협업 강화</b><span>광주서부지사와 검진기관 간 협업을 지원합니다.</span></div>
+    </div>
+    <div class="nick-box">
+      <label for="nickname">닉네임</label>
+      <input id="nickname" class="input" maxlength="20" placeholder="사용하실 닉네임을 입력해주세요." autocomplete="off">
+      <button class="primary enter-btn" onclick="enterSite()">입장하기</button>
+      <p class="guide">별도의 회원가입 없이 닉네임으로 이용할 수 있습니다.<br>개인정보 또는 민감정보는 게시하지 않도록 유의해주세요.</p>
+    </div>
+    <div class="login-footer">광주서부지사와 검진기관 관계자 간 업무 소통 및 협업을 지원하기 위한 공간입니다.</div>
+  </section>
+</main>
+
+<section id="boardScreen" class="board-screen">
+  <div class="board-hero">
+    <div>
+      <h2>검진기관 소통 게시판</h2>
+      <p>검진 업무와 관련된 질문, 정보, 건의사항을 자유롭게 공유해주세요.<br>서로의 경험과 업무 정보를 나누는 협업 공간입니다.</p>
+    </div>
+    <div class="user-panel"><strong id="currentNickname"></strong> 님<br><button class="ghost-btn" onclick="changeNickname()">닉네임 변경</button></div>
+  </div>
+
+  <div class="notice-strip"><b>이용 안내</b><span>환자 이름, 주민등록번호, 연락처 등 개인정보나 검진 대상자를 특정할 수 있는 내용은 게시하지 마세요.</span></div>
+
+  <div class="board-card">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <select id="categoryFilter" class="select" onchange="resetAndRender()">
+          <option value="전체">전체</option><option value="공지">공지</option><option value="질문">질문</option><option value="정보공유">정보공유</option><option value="건의">건의</option>
+        </select>
+        <input id="searchInput" class="search-input" placeholder="제목, 내용, 작성자 검색">
+        <button class="small-btn" onclick="resetAndRender()">검색</button>
+      </div>
+      <div class="toolbar-right">
+        <span class="count">전체 <b id="postCount">0</b>건</span>
+        <button class="primary write-btn" onclick="openWriteModal()">＋ 글쓰기</button>
+      </div>
+    </div>
+
+    <div class="board-table">
+      <div class="thead"><div>번호</div><div>구분</div><div>제목</div><div>작성자</div><div>작성일</div><div>조회</div></div>
+      <div id="postList"></div>
+    </div>
+    <div id="pagination" class="pagination"></div>
+  </div>
+
+  <div class="info-note">현재 테스트 버전은 DB 없이 브라우저에 게시글과 댓글을 저장합니다. 다른 기기와 게시글을 공유하려면 이후 서버 저장 기능을 연결해야 합니다.</div>
+</section>
+
+<div id="writeModal" class="modal-bg" onclick="backdropClose(event,'writeModal')">
+  <div class="modal">
+    <div class="modal-head"><h3 id="writeModalTitle">게시글 작성</h3><button class="close" onclick="closeWriteModal()">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label>작성자</label><div id="writerDisplay" class="writer"></div></div>
+      <div class="form-group"><label for="postCategory">구분</label>
+        <select id="postCategory" class="select full"><option>질문</option><option>정보공유</option><option>건의</option><option>공지</option></select>
+      </div>
+      <div class="form-group"><label for="postTitle">제목</label><input id="postTitle" class="text-input" maxlength="80" placeholder="제목을 입력해주세요."></div>
+      <div class="form-group"><label for="postContent">내용</label><textarea id="postContent" class="textarea" maxlength="4000" placeholder="검진 업무와 관련된 질문이나 의견을 작성해주세요."></textarea></div>
+      <div class="actions"><button class="btn gray" onclick="closeWriteModal()">취소</button><button class="btn green" onclick="savePost()">등록하기</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="detailModal" class="modal-bg" onclick="backdropClose(event,'detailModal')">
+  <div class="modal">
+    <div class="modal-head"><h3>게시글</h3><button class="close" onclick="closeDetailModal()">×</button></div>
+    <div class="modal-body">
+      <div id="detailCategory" style="margin-bottom:10px"></div>
+      <h3 id="detailTitle" class="detail-title"></h3>
+      <div class="detail-meta"><span>작성자 <b id="detailAuthor"></b></span><span id="detailDate"></span><span>조회 <b id="detailViews"></b></span></div>
+      <div id="detailContent" class="detail-content"></div>
+
+      <div class="comment-section">
+        <h4>댓글 <span id="commentCount">0</span></h4>
+        <div id="commentList"></div>
+        <div class="comment-write">
+          <textarea id="commentInput" maxlength="1000" placeholder="댓글을 입력해주세요."></textarea>
+          <button onclick="addComment()">댓글 등록</button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="deleteBtn" class="btn red" onclick="deleteCurrentPost()">삭제</button>
+        <button id="editBtn" class="btn gray" onclick="editCurrentPost()">수정</button>
+        <button class="btn gray" onclick="closeDetailModal()">목록</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const NICK_KEY="gwangjuWestNickname";
+const POSTS_KEY="gwangjuWestPostsV2";
+const PAGE_SIZE=8;
+
+let currentPage=1;
+let selectedPostId=null;
+let editingPostId=null;
+
+const $=id=>document.getElementById(id);
+
+window.addEventListener("DOMContentLoaded",()=>{
+  const nick=localStorage.getItem(NICK_KEY);
+  if(nick) $("nickname").value=nick;
+  seedNotice();
+  renderPosts();
+  $("nickname").focus();
+});
+
+$("nickname").addEventListener("keydown",e=>{if(e.key==="Enter") enterSite()});
+$("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter") resetAndRender()});
+
+function enterSite(){
+  const nick=$("nickname").value.trim();
+  if(!nick){alert("닉네임을 입력해주세요.");$("nickname").focus();return;}
+  localStorage.setItem(NICK_KEY,nick);
+  $("currentNickname").textContent=nick;
+  $("writerDisplay").textContent=nick;
+  $("loginScreen").style.display="none";
+  $("boardScreen").style.display="block";
+  renderPosts();
+  window.scrollTo(0,0);
+}
+
+function changeNickname(){
+  $("boardScreen").style.display="none";
+  $("loginScreen").style.display="flex";
+  $("nickname").focus();
+}
+
+function getPosts(){
+  try{return JSON.parse(localStorage.getItem(POSTS_KEY)||"[]")}catch{return[]}
+}
+function setPosts(posts){localStorage.setItem(POSTS_KEY,JSON.stringify(posts))}
+
+function seedNotice(){
+  const posts=getPosts();
+  if(posts.length) return;
+  setPosts([{
+    id:Date.now()-10000, category:"공지", title:"검진기관 소통 게시판 이용 안내",
+    content:"광주서부지사와 검진기관 관계자 간 원활한 업무 소통을 위한 공간입니다.\n\n검진 업무와 관련된 질문, 정보공유, 건의사항을 자유롭게 작성해주세요.\n\n※ 환자 개인정보나 민감정보는 게시하지 않도록 유의해주세요.",
+    author:"광주서부지사", createdAt:new Date().toISOString(), views:0, comments:[], system:true
+  }]);
+}
+
+function categoryClass(cat){
+  return cat==="공지"?"notice":cat==="질문"?"question":cat==="정보공유"?"share":"suggest";
+}
+
+function filteredPosts(){
+  const cat=$("categoryFilter").value;
+  const q=$("searchInput").value.trim().toLowerCase();
+  return getPosts().filter(p=>{
+    const catOk=cat==="전체"||p.category===cat;
+    const text=(p.title+" "+p.content+" "+p.author).toLowerCase();
+    return catOk&&(!q||text.includes(q));
+  });
+}
+
+function resetAndRender(){currentPage=1;renderPosts()}
+
+function renderPosts(){
+  const posts=filteredPosts();
+  $("postCount").textContent=posts.length;
+  $("postList").innerHTML="";
+  const totalPages=Math.max(1,Math.ceil(posts.length/PAGE_SIZE));
+  if(currentPage>totalPages) currentPage=totalPages;
+  const start=(currentPage-1)*PAGE_SIZE;
+  const pagePosts=posts.slice(start,start+PAGE_SIZE);
+
+  if(!pagePosts.length){
+    $("postList").innerHTML='<div class="empty"><b>등록된 게시글이 없습니다.</b>검색 조건을 변경하거나 새 글을 작성해주세요.</div>';
+  }else{
+    pagePosts.forEach((p,i)=>{
+      const row=document.createElement("div");
+      row.className="trow";
+      const num=posts.length-(start+i);
+      const cc=(p.comments||[]).length;
+      row.innerHTML=`
+        <div class="num">${p.system?"-":num}</div>
+        <div class="cat-cell"><span class="cat ${categoryClass(p.category)}">${escapeHtml(p.category)}</span></div>
+        <div class="title-cell"><button class="title-btn">${escapeHtml(p.title)}${cc?` <span class="comment-badge">[${cc}]</span>`:""}</button></div>
+        <div class="author">${escapeHtml(p.author)}</div>
+        <div class="date">${formatDate(p.createdAt)}</div>
+        <div class="views">${p.views||0}</div>`;
+      row.querySelector(".title-btn").addEventListener("click",()=>openDetail(p.id));
+      $("postList").appendChild(row);
+    });
+  }
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages){
+  $("pagination").innerHTML="";
+  for(let i=1;i<=totalPages;i++){
+    const b=document.createElement("button");
+    b.className="page-btn"+(i===currentPage?" active":"");
+    b.textContent=i;
+    b.onclick=()=>{currentPage=i;renderPosts();window.scrollTo({top:180,behavior:"smooth"})};
+    $("pagination").appendChild(b);
+  }
+}
+
+function openWriteModal(){
+  editingPostId=null;
+  $("writeModalTitle").textContent="게시글 작성";
+  $("writerDisplay").textContent=localStorage.getItem(NICK_KEY)||"";
+  $("postCategory").value="질문";
+  $("postTitle").value="";
+  $("postContent").value="";
+  $("writeModal").classList.add("show");
+  document.body.style.overflow="hidden";
+  setTimeout(()=>$("postTitle").focus(),50);
+}
+function closeWriteModal(){
+  $("writeModal").classList.remove("show");
+  if(!$("detailModal").classList.contains("show")) document.body.style.overflow="";
+}
+
+function savePost(){
+  const title=$("postTitle").value.trim();
+  const content=$("postContent").value.trim();
+  const category=$("postCategory").value;
+  const author=localStorage.getItem(NICK_KEY)||"";
+  if(!title){alert("제목을 입력해주세요.");return}
+  if(!content){alert("내용을 입력해주세요.");return}
+
+  const posts=getPosts();
+  if(editingPostId){
+    const p=posts.find(x=>x.id===editingPostId);
+    if(!p||p.author!==author){alert("본인이 작성한 글만 수정할 수 있습니다.");return}
+    p.title=title;p.content=content;p.category=category;p.updatedAt=new Date().toISOString();
+  }else{
+    posts.unshift({id:Date.now(),category,title,content,author,createdAt:new Date().toISOString(),views:0,comments:[]});
+  }
+  setPosts(posts);
+  closeWriteModal();
+  renderPosts();
+}
+
+function openDetail(id){
+  let posts=getPosts();
+  const p=posts.find(x=>x.id===id);
+  if(!p) return;
+  p.views=(p.views||0)+1;
+  setPosts(posts);
+  selectedPostId=id;
+  fillDetail(p);
+  $("detailModal").classList.add("show");
+  document.body.style.overflow="hidden";
+  renderPosts();
+}
+
+function fillDetail(p){
+  $("detailCategory").innerHTML=`<span class="cat ${categoryClass(p.category)}">${escapeHtml(p.category)}</span>`;
+  $("detailTitle").textContent=p.title;
+  $("detailAuthor").textContent=p.author;
+  $("detailDate").textContent=formatFullDate(p.createdAt)+(p.updatedAt?" · 수정됨":"");
+  $("detailViews").textContent=p.views||0;
+  $("detailContent").textContent=p.content;
+
+  const mine=(localStorage.getItem(NICK_KEY)===p.author)&&!p.system;
+  $("deleteBtn").style.display=mine?"inline-block":"none";
+  $("editBtn").style.display=mine?"inline-block":"none";
+  renderComments(p);
+}
+
+function closeDetailModal(){
+  $("detailModal").classList.remove("show");
+  selectedPostId=null;
+  document.body.style.overflow="";
+}
+
+function editCurrentPost(){
+  const p=getPosts().find(x=>x.id===selectedPostId);
+  if(!p) return;
+  editingPostId=p.id;
+  $("writeModalTitle").textContent="게시글 수정";
+  $("writerDisplay").textContent=p.author;
+  $("postCategory").value=p.category;
+  $("postTitle").value=p.title;
+  $("postContent").value=p.content;
+  $("detailModal").classList.remove("show");
+  $("writeModal").classList.add("show");
+}
+
+function deleteCurrentPost(){
+  const posts=getPosts();
+  const p=posts.find(x=>x.id===selectedPostId);
+  const nick=localStorage.getItem(NICK_KEY);
+  if(!p||p.author!==nick||p.system){alert("본인이 작성한 글만 삭제할 수 있습니다.");return}
+  if(!confirm("게시글을 삭제하시겠습니까?")) return;
+  setPosts(posts.filter(x=>x.id!==selectedPostId));
+  closeDetailModal();
+  renderPosts();
+}
+
+function addComment(){
+  const text=$("commentInput").value.trim();
+  if(!text){alert("댓글을 입력해주세요.");return}
+  const posts=getPosts();
+  const p=posts.find(x=>x.id===selectedPostId);
+  if(!p) return;
+  p.comments=p.comments||[];
+  p.comments.push({id:Date.now(),author:localStorage.getItem(NICK_KEY)||"",text,createdAt:new Date().toISOString()});
+  setPosts(posts);
+  $("commentInput").value="";
+  fillDetail(p);
+  renderPosts();
+}
+
+function deleteComment(commentId){
+  const posts=getPosts();
+  const p=posts.find(x=>x.id===selectedPostId);
+  if(!p) return;
+  const c=(p.comments||[]).find(x=>x.id===commentId);
+  if(!c||c.author!==localStorage.getItem(NICK_KEY)){alert("본인이 작성한 댓글만 삭제할 수 있습니다.");return}
+  if(!confirm("댓글을 삭제하시겠습니까?")) return;
+  p.comments=p.comments.filter(x=>x.id!==commentId);
+  setPosts(posts);fillDetail(p);renderPosts();
+}
+
+function renderComments(p){
+  const comments=p.comments||[];
+  $("commentCount").textContent=comments.length;
+  $("commentList").innerHTML="";
+  if(!comments.length){
+    $("commentList").innerHTML='<div style="font-size:12px;color:#8c989f;padding:8px 0 12px">아직 등록된 댓글이 없습니다.</div>';
+    return;
+  }
+  comments.forEach(c=>{
+    const div=document.createElement("div");
+    div.className="comment-item";
+    const mine=c.author===localStorage.getItem(NICK_KEY);
+    div.innerHTML=`
+      <div class="comment-meta"><span><b>${escapeHtml(c.author)}</b> · ${formatFullDate(c.createdAt)}</span>${mine?`<button class="comment-delete">삭제</button>`:""}</div>
+      <div class="comment-text">${escapeHtml(c.text)}</div>`;
+    if(mine) div.querySelector(".comment-delete").onclick=()=>deleteComment(c.id);
+    $("commentList").appendChild(div);
+  });
+}
+
+function backdropClose(e,id){
+  if(e.target.id!==id) return;
+  id==="writeModal"?closeWriteModal():closeDetailModal();
+}
+
+function formatDate(s){
+  return new Intl.DateTimeFormat("ko-KR",{month:"2-digit",day:"2-digit"}).format(new Date(s));
+}
+function formatFullDate(s){
+  return new Intl.DateTimeFormat("ko-KR",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(new Date(s));
+}
+function escapeHtml(str=""){
+  return String(str).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+</script>
+</body>
+</html>
